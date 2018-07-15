@@ -4,20 +4,6 @@ App = {
     account: 0,
 
     init: function() {
-        // load articlesRow
-
-        var articlesRow = $('#articlesRow');
-        var articleTemplate = $('#articleTemplate');
-
-        articleTemplate.find('.panel-title').text('article 1');
-        articleTemplate
-            .find('.article-description')
-            .text('Description for article 1');
-        articleTemplate.find('.article-price').text('100');
-        articleTemplate.find('.article-seller').text('0x12345678901234567890');
-
-        articlesRow.append(articleTemplate.html());
-
         return App.initWeb3();
     },
 
@@ -65,6 +51,9 @@ App = {
             // Set the provider for our contract.
             App.contracts.ChainList.setProvider(App.web3Provider);
 
+            // Listen to events
+            App.listenToEvents();
+
             // Retrieve the article from the smart contract
             return App.reloadArticles();
         });
@@ -110,7 +99,7 @@ App = {
     },
 
     sellArticle: function() {
-          console.log("sell called");
+        console.log('sell called');
         // retrive the detail of the article
         var _article_name = $('#article_name').val();
         var _description = $('#article_description').val();
@@ -134,11 +123,29 @@ App = {
                 );
             })
             .then(function(result) {
-                App.reloadArticles();
+
             })
             .catch(function(err) {
                 console.log(err);
             });
+    },
+
+    // listen to events triggered by the contract
+    listenToEvents: function() {
+        App.contracts.ChainList.deployed().then(function(instance) {
+            instance.LogSellArticle({}, {}).watch(function(err, event) {
+                if (!err) {
+                    $('#events').append(
+                        '<li class="list-group-item">' +
+                            event.args._name +
+                            ' is now for sale</li>'
+                    );
+                } else {
+                    console.log(err);
+                }
+                App.reloadArticles();
+            });
+        });
     }
 };
 
