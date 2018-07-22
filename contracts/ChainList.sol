@@ -1,6 +1,8 @@
 pragma solidity ^0.4.18;
 
-contract ChainList {
+import './Ownable.sol';
+
+contract ChainList is Ownable {
 
     // custom types
     struct Article {
@@ -30,6 +32,11 @@ contract ChainList {
         string _name,
         uint256 _price
     );
+
+    // deactivate the contract
+    function kill() public onlyOwner {
+        selfdestruct(owner);
+    }
 
     // sell article
     function sellArticle(string _name, string _description, uint256 _price) public {
